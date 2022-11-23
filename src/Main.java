@@ -1,73 +1,50 @@
-import java.io.IOException;
 import java.util.Scanner;
-
 public class Main {
     static Scanner scn = new Scanner(System.in);
-
-    public static void main(String[] args) throws IOException {
-
-
+    public static void main(String[] args) throws Exception {
         String usrExp = scn.nextLine().replaceAll("\\s+","");
-        System.out.println(calc(usrExp));
+        System.out.println("Результат:" + calc(usrExp));
     }
-
-    public static String calc (String input) throws IOException {
-        int operand0, operand1, result=0;
-        boolean arab = true;
-        String resultStr;
-
+    public static String calc (String input) throws Exception {
+        int operand0, operand1, result;
+        char typeOperands = 'a';
         String[] operands = input.split("[+-/*]");
         if (operands.length != 2) {
-            throw new IOException ("Ошибка: неправильная запись выражения. Завершение работы...");
+            throw new Exception ("Ошибка: неправильная запись выражения. Завершение работы...");
         }
         char operator = input.charAt(operands[0].length());
         try {
             operand0 = Integer.parseInt(operands[0]);
             operand1 = Integer.parseInt(operands[1]);
-        } catch (IllegalArgumentException e) {
-            try {
+        } catch (Exception e) {
+           try {
                 operand0 = Romans.valueOf(operands[0]).ordinal();
                 operand1 = Romans.valueOf(operands[1]).ordinal();
-                arab = false;
-            } catch (IllegalArgumentException e2) {
-                throw new IOException("Ошибка: Операнды в разных системах исчисления или неверная запись операндов. Завершение работы...");
+                typeOperands = 'r';
             }
-
-        }
-        if (operand0>0&operand0<11&operand1>0&operand1<11) {
+        catch (Exception e2) {
+                throw new Exception("Ошибка: Операнды в разных системах исчисления или неверная запись операндов. Завершение работы...");
+            }
+       }
+        if ((operand0<0||operand0>11) && (operand1<0||operand1>11)) {
+            throw new Exception ("Ошибка: Один или оба операнда вне диапазона допустимых значения. Завершение работы...");
+        } else {
             result = calcInt(operand0, operand1, operator);
-        } else {
-            throw new IOException ("Ошибка: Один или оба операнда вне диапазона допустимых значения. Завершение работы...");
+            if (typeOperands == 'r' & result <= 0) {typeOperands = 'e';}
+            return switch (typeOperands) {
+                case 'a' -> " " + result;
+                case 'r' -> " " + Romans.values()[result];
+                default -> throw new Exception ("Ошибка: Результат находится в области отрицательных чисел. В римской системе исчисления отрицательные числа отсутствуют. Завершение работы...");
+                };
         }
-        if (arab==true){
-            resultStr = result+"";
-        } else {
-            try {
-                resultStr = Romans.values()[result]+"";
-            }
-            catch (ArrayIndexOutOfBoundsException e) {
-                throw new IOException ("Ошибка: Результат находится в области отрицательных чисел. В римской системе исчисления отрицательные числа отсутствуют. Завершение работы...");
-            }
-        }
-        return resultStr;
     }
-
     static int calcInt(int oprnd0, int oprnd1, char oprtr) {
-        int rslt = 0;
-        switch (oprtr) {
-            case '+':
-                rslt = oprnd0 + oprnd1;
-                break;
-            case '-':
-                rslt = oprnd0 - oprnd1;
-                break;
-            case '*':
-                rslt = oprnd0 * oprnd1;
-                break;
-            case '/':
-                rslt = oprnd0 / oprnd1;
-                break;
-        }
-        return rslt;
+        return switch (oprtr) {
+            case '+' -> oprnd0 + oprnd1;
+            case '-' -> oprnd0 - oprnd1;
+            case '*' -> oprnd0 * oprnd1;
+            case '/' -> oprnd0 / oprnd1;
+            default -> throw new IllegalStateException("Результат не определён в коде: " + oprtr);
+        };
     }
 }
